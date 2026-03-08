@@ -1,0 +1,21 @@
+{
+    "folders": [
+        {
+            "path": "backend",
+            "name": "Backend (Java/Spring)"
+        },
+        {
+            "path": "frontend",
+            "name": "Frontend"
+        },
+        {
+            "path": ".",
+            "name": "Project Root"
+        }
+    ],
+    "settings": {
+        "java.import.gradle.enabled": true,
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "java.autostart": true
+    }
+}
