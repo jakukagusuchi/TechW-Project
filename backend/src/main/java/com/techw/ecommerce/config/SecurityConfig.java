@@ -40,9 +40,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/categories/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/brands/**").permitAll()
                         .requestMatchers("/api/products/**").hasRole("ADMIN")
                         .requestMatchers("/api/categories/**").hasRole("ADMIN")
                         .requestMatchers("/api/brands/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/cart/**").authenticated()
+                        .requestMatchers("/api/orders/**").authenticated()
                         .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
