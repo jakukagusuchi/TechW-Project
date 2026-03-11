@@ -1,5 +1,0 @@
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'TechW')
-BEGIN
-  CREATE DATABASE TechW;
-END
-GO
