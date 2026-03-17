@@ -23,6 +23,9 @@ ehthumbs.db
 Thumbs.db
 desktop.ini
 
+# Database
+db-data/
+
 # Logs
 logs/
 *.log
