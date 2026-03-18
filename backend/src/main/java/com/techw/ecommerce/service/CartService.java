@@ -72,7 +72,7 @@ public class CartService {
     }
 
     @Transactional
-    public CartDto updateItemQuantity(String email, Long itemId, Integer quantity) {
+    public CartDto updateItemQuantity(String email, UUID itemId, Integer quantity) {
         Cart cart = getOrCreateCart(email);
 
         CartItem item = cart.getItems().stream()
@@ -92,7 +92,7 @@ public class CartService {
     }
 
     @Transactional
-    public CartDto removeItem(String email, Long itemId) {
+    public CartDto removeItem(String email, UUID itemId) {
         Cart cart = getOrCreateCart(email);
 
         CartItem item = cart.getItems().stream()

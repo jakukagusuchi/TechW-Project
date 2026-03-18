@@ -33,6 +33,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+backend_logs.txt
+git_status_*.txt
+
 
 # Java / Gradle (Backend)
 .gradle/

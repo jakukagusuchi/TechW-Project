@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
@@ -27,13 +29,13 @@ public class CartController {
     }
 
     @PutMapping("/items/{itemId}")
-    public ResponseEntity<CartDto> updateItemQuantity(Authentication authentication, @PathVariable Long itemId,
+    public ResponseEntity<CartDto> updateItemQuantity(Authentication authentication, @PathVariable UUID itemId,
             @RequestParam Integer quantity) {
         return ResponseEntity.ok(cartService.updateItemQuantity(authentication.getName(), itemId, quantity));
     }
 
     @DeleteMapping("/items/{itemId}")
-    public ResponseEntity<CartDto> removeItemFromCart(Authentication authentication, @PathVariable Long itemId) {
+    public ResponseEntity<CartDto> removeItemFromCart(Authentication authentication, @PathVariable UUID itemId) {
         return ResponseEntity.ok(cartService.removeItem(authentication.getName(), itemId));
     }
 

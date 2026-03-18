@@ -2,19 +2,45 @@
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useProductStore } from '../stores/product';
+import { useAuthStore } from '../stores/auth';
+import api from '../services/api';
 
 const route = useRoute();
 const productStore = useProductStore();
+const authStore = useAuthStore();
+
 const product = ref(null);
 const quantity = ref(1);
+const addingToCart = ref(false);
+const showSuccess = ref(false);
 
 onMounted(async () => {
   product.value = await productStore.fetchProductById(route.params.id);
 });
 
-function addToCart() {
-  // Logic to add to cart store
-  alert(`${quantity.value} item(s) added to cart!`);
+async function addToCart() {
+  if (!authStore.isAuthenticated) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  if (quantity.value < 1) return;
+
+  addingToCart.value = true;
+  try {
+    await api.post('/api/cart/items', {
+      productId: product.value.id,
+      quantity: quantity.value
+    });
+    showSuccess.value = true;
+    setTimeout(() => {
+      showSuccess.value = false;
+    }, 2500);
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to add item to cart.');
+  } finally {
+    addingToCart.value = false;
+  }
 }
 </script>
 
@@ -35,14 +61,18 @@ function addToCart() {
 
         <div class="purchase-actions">
           <div class="quantity-input">
-            <button @click="quantity > 1 && quantity--">-</button>
+            <button @click="quantity > 1 && quantity--">−</button>
             <span>{{ quantity }}</span>
             <button @click="quantity++">+</button>
           </div>
-          <button @click="addToCart" class="btn-primary flex-1">Add to Cart</button>
+          <button @click="addToCart" class="btn-primary flex-1" :class="{ 'btn-success': showSuccess }" :disabled="addingToCart || !product.isActive">
+            <span v-if="showSuccess">✓ Added to Cart</span>
+            <span v-else-if="addingToCart">Adding...</span>
+            <span v-else>Add to Cart</span>
+          </button>
         </div>
 
-        <div class="stock-status" :class="{ 'in-stock': product.stockQuantity > 0 }">
+        <div class="stock-status" :class="{ 'in-stock': product.stockQuantity > 0, 'out-of-stock': product.stockQuantity <= 0 }">
           {{ product.stockQuantity > 0 ? 'In Stock' : 'Out of Stock' }}
         </div>
       </div>
@@ -62,8 +92,10 @@ h1 { font-size: 3rem; margin: 0.5rem 0 1rem; }
 .quantity-input { display: flex; align-items: center; background: var(--surface); border-radius: 8px; border: 1px solid var(--border); }
 .quantity-input button { padding: 0.75rem 1rem; background: transparent; color: white; }
 .quantity-input span { padding: 0 1rem; min-width: 40px; text-align: center; font-weight: 600; }
-.flex-1 { flex: 1; }
+.flex-1 { flex: 1; transition: background-color 0.2s; }
+.btn-success { background: #10b981 !important; border-color: #10b981 !important; }
 .stock-status { font-size: 0.9rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 99px; display: inline-block; }
 .in-stock { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-.loading { text-align: center; padding: 5rem; }
+.out-of-stock { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.loading { text-align: center; padding: 5rem; color: var(--text-muted); font-size: 1.1rem; }
 </style>

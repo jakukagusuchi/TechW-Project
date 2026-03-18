@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,13 +53,13 @@ public class CartServiceTest {
                 .build();
 
         testCart = Cart.builder()
-                .id(1L)
+                .id(UUID.randomUUID())
                 .user(testUser)
                 .items(new ArrayList<>())
                 .build();
 
         testProduct = Product.builder()
-                .id(1L)
+                .id(UUID.randomUUID())
                 .name("Test Product")
                 .price(BigDecimal.valueOf(100.0))
                 .isActive(true)
@@ -99,7 +100,7 @@ public class CartServiceTest {
     @Test
     void testCheckout() {
         CartItem cartItem = CartItem.builder()
-                .id(1L)
+                .id(UUID.randomUUID())
                 .cart(testCart)
                 .product(testProduct)
                 .quantity(2)
