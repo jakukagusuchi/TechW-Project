@@ -1,7 +1,10 @@
 package com.techw.ecommerce.controller;
 
+import com.techw.ecommerce.dto.ApiResponse;
+import com.techw.ecommerce.dto.CreateProductRequest;
 import com.techw.ecommerce.model.Product;
 import com.techw.ecommerce.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,37 +22,35 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping
-    public ResponseEntity<Page<Product>> getAllProducts(
+    public ResponseEntity<ApiResponse<Page<Product>>> getAllProducts(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) UUID categoryId,
             Pageable pageable) {
-        return ResponseEntity.ok(productService.getAllProducts(name, categoryId, pageable));
+        return ResponseEntity.ok(ApiResponse.success(productService.getAllProducts(name, categoryId, pageable)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable UUID id) {
-        return productService.getProductById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ApiResponse<Product>> getProductById(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.success(productService.getProductById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        return ResponseEntity.ok(productService.saveProduct(product));
+    public ResponseEntity<ApiResponse<Product>> createProduct(@Valid @RequestBody CreateProductRequest request) {
+        return ResponseEntity.ok(ApiResponse.created(productService.createProduct(request)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> updateProduct(@PathVariable UUID id, @RequestBody Product product) {
-        product.setId(id);
-        return ResponseEntity.ok(productService.saveProduct(product));
+    public ResponseEntity<ApiResponse<Product>> updateProduct(@PathVariable UUID id,
+            @Valid @RequestBody CreateProductRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(productService.updateProduct(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable UUID id) {
         productService.deleteProduct(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Product deleted successfully", null));
     }
 }

@@ -26,6 +26,7 @@ public class CartDto {
         private UUID productId;
         private String productName;
         private Double productPrice;
+        private String productImageUrl;
         private Integer quantity;
     }
 }

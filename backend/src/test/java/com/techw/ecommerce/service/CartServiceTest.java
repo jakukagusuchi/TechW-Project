@@ -2,6 +2,7 @@ package com.techw.ecommerce.service;
 
 import com.techw.ecommerce.dto.CartDto;
 import com.techw.ecommerce.dto.CartItemRequest;
+import com.techw.ecommerce.dto.CheckoutRequest;
 import com.techw.ecommerce.model.*;
 import com.techw.ecommerce.repository.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,6 +63,7 @@ public class CartServiceTest {
                 .id(UUID.randomUUID())
                 .name("Test Product")
                 .price(BigDecimal.valueOf(100.0))
+                .imageUrl("https://example.com/image.jpg")
                 .isActive(true)
                 .build();
     }
@@ -95,6 +97,7 @@ public class CartServiceTest {
         assertEquals(1, result.getItems().size());
         assertEquals(2, result.getItems().get(0).getQuantity());
         assertEquals("Test Product", result.getItems().get(0).getProductName());
+        assertEquals("https://example.com/image.jpg", result.getItems().get(0).getProductImageUrl());
     }
 
     @Test
@@ -111,13 +114,22 @@ public class CartServiceTest {
         when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
         when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        Order result = cartService.checkout(testUser.getEmail());
+        CheckoutRequest checkoutRequest = new CheckoutRequest();
+        checkoutRequest.setFullName("Test User");
+        checkoutRequest.setAddress("123 Test Street");
+        checkoutRequest.setCity("Test City");
+        checkoutRequest.setZipCode("12345");
+        checkoutRequest.setPaymentMethod("CASH_ON_DELIVERY");
+
+        Order result = cartService.checkout(testUser.getEmail(), checkoutRequest);
 
         assertNotNull(result);
         assertEquals(testUser, result.getUser());
         assertEquals(1, result.getItems().size());
         assertEquals(BigDecimal.valueOf(200.0), result.getTotalAmount());
         assertEquals(Order.OrderStatus.PENDING, result.getStatus());
+        assertEquals(Order.PaymentMethod.CASH_ON_DELIVERY, result.getPaymentMethod());
+        assertTrue(result.getShippingAddress().contains("Test User"));
 
         verify(cartRepository).save(testCart); // Verify cart was saved (cleared)
         assertTrue(testCart.getItems().isEmpty(), "Cart should be empty after checkout");

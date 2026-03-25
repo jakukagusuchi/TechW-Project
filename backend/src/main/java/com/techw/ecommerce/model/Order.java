@@ -32,6 +32,10 @@ public class Order {
     @Builder.Default
     private OrderStatus status = OrderStatus.PENDING;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private PaymentMethod paymentMethod = PaymentMethod.CASH_ON_DELIVERY;
+
     @Column(nullable = false)
     private String shippingAddress;
 
@@ -58,5 +62,9 @@ public class Order {
 
     public enum OrderStatus {
         PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+    }
+
+    public enum PaymentMethod {
+        BANK_TRANSFER, QR_CODE, CASH_ON_DELIVERY
     }
 }

@@ -1,121 +1,151 @@
 # TechW E-Commerce System
 
-A comprehensive e-commerce backend system built with Spring Boot, providing both admin and public APIs for managing products, categories, brands, orders, and users.
+A comprehensive e-commerce backend system built with Spring Boot, providing both admin and public APIs for managing products, categories, brands, orders, carts, and users.
 
 ## Features
 
-- **Product Management**: Create, update, delete, and view products with price, stock, and status management.
-- **Category & Brand Management**: Organize products dynamically using standalone categories and brands.
-- **Order Management**: Process and track customer orders, separating administrative views from specific user histories.
-- **Cart & User Profiles** *(Planned)*: User-specific cart items and personalized profile management. 
-- **Authentication & Authorization**: Secure access combining public browsing and JWT-based restricted operations for administrators.
-
-## API Endpoints
-
-### Admin APIs (Authentication Required)
-
-#### Product Management
-- `POST /api/products` - Create a new product
-- `PUT /api/products/{id}` - Update an existing product
-- `DELETE /api/products/{id}` - Delete a product
-
-#### Category Management
-- `POST /api/categories` - Create a new category
-- `PUT /api/categories/{id}` - Update an existing category
-- `DELETE /api/categories/{id}` - Delete a category
-
-#### Brand Management
-- `POST /api/brands` - Create a new brand
-- `PUT /api/brands/{id}` - Update an existing brand
-- `DELETE /api/brands/{id}` - Delete a brand
-
-#### Order Management
-- `GET /api/orders` - Get all orders in the system
-- `GET /api/orders/user/{userId}` - Get all orders for a specific user (Authenticated User/Admin)
-- `GET /api/orders/{id}` - Get details of a specific order (Authenticated User/Admin)
-- `PUT /api/orders/{id}/status` - Update the status of an order (Admin)
-
-#### User Management (Possible/Planned)
-- `GET /api/users` - Get a list of all registered users
-- `PUT /api/users/{id}/role` - Update a specific user's system role
-
-### Public APIs (No Authentication Required)
-
-#### Authentication
-- `POST /api/auth/register` - Register a new user account
-- `POST /api/auth/login` - Authenticate a user and receive a JWT token
-
-#### Catalog Information
-- `GET /api/products` - Get a paginated list of all active products (Supports `name`, `categoryId` filters)
-- `GET /api/products/{id}` - Get product details by ID
-- `GET /api/categories` - Get all available categories
-- `GET /api/brands` - Get all available brands
-
-#### Cart Management (Possible/Planned)
-*(Currently missing controllers, but supported by existing data models)*
-- `GET /api/cart` - Retrieve the current logged-in user's shopping cart.
-- `POST /api/cart/items` - Add a product to the cart.
-- `PUT /api/cart/items/{itemId}` - Update the quantity of a specific item in the cart.
-- `DELETE /api/cart/items/{itemId}` - Remove a specific item from the cart.
-- `DELETE /api/cart` - Clear the entire user cart.
-- `POST /api/checkout` - Convert the current `Cart` to an `Order`.
-
-## Data Models
-
-### Catalog Models
-- `Product`: Core sales item tracking stock, price, activation status, images, and relationships.
-- `Category`: Represents groupings of products for better navigation.
-- `Brand`: Represents manufacturers or labels associated with products.
-
-### Commerce Models
-- `Cart`: Active shopping sessions linked to users.
-- `CartItem`: Specific products and quantities within a Cart.
-- `Order`: Completed transactions tracking final pricing, dates, and status.
-- `OrderItem`: Specific products locked at a purchased price for historical tracking.
-
-### User & Security Models
-- `User`: Identity details including ID (UUID), Email, Name, and Role.
-- `Role`: Enum values (`USER`, `ADMIN`) governing access permissions.
+- **Product Management**: CRUD operations with validation, filtering by name/category, and pagination.
+- **Category & Brand Management**: Organize products with full CRUD.
+- **Order Management**: Create orders via checkout, cancel/edit PENDING orders, admin status updates.
+- **Cart Management**: Add/remove items, update quantities, checkout to create orders.
+- **User Profiles**: View and update profile (name, avatar).
+- **Authentication & Authorization**: JWT-based auth with BCrypt password hashing.
+- **Role-based Access Control**: `USER` and `ADMIN` roles with endpoint-level security.
+- **Input Validation**: `@NotBlank`, `@Size`, `@Min`, `@DecimalMin` on all request DTOs.
+- **Custom Exceptions**: `ResourceNotFoundException` (404), `BusinessRuleException` (400), `DuplicateResourceException` (409).
+- **Standardized API Response**: All endpoints return `ApiResponse<T>` with `{ code, message, data }`.
+- **Swagger/OpenAPI**: Interactive API documentation at `/swagger-ui.html`.
+- **Spring Profiles**: Separate `dev` and `prod` configurations.
+- **Unit Tests**: Mockito-based tests for services (Cart, User, Product, Auth).
 
 ## Technology Stack
 
-- **Backend**: Spring Boot 3.x
-- **Database**: SQL Server with JPA/Hibernate
-- **Authentication**: JWT with Spring Security
-- **Data Validation**: Jakarta Validations
+- **Backend**: Spring Boot 3.2.3 (Java 17)
+- **Database**: PostgreSQL 15
+- **Authentication**: JWT (jjwt) + Spring Security + BCrypt
+- **Validation**: Jakarta Bean Validation
+- **API Docs**: springdoc-openapi (Swagger UI)
+- **Testing**: JUnit 5 + Mockito
 - **Build Tool**: Gradle
+- **Containerization**: Docker + Docker Compose
 
 ## Getting Started
 
 ### Prerequisites
-- Java 17 or higher
-- SQL Server
-- Gradle 8.x
+- Java 17+
+- Docker & Docker Compose (recommended)
+- OR PostgreSQL 15+ (for local development without Docker)
 
-### Installation
+### Quick Start with Docker
 
-1. Clone the repository
-2. Configure database connection in `src/main/resources/application.properties`
-3. Optional: Set `spring.jpa.hibernate.ddl-auto=create` on the first run to build schema. Revert to `update` afterward.
-4. Start the application: `.\gradlew.bat bootRun`
+```bash
+# Clone and start all services (DB + Backend + Frontend)
+docker compose up --build
+```
 
-### Configuration
+- **Backend API**: http://localhost:8080
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
+- **Frontend**: http://localhost:5173
 
-Key configuration properties:
-- `spring.datasource.url` - Database connection URL
-- `spring.jpa.hibernate.ddl-auto` - Database schema generation mode
-- JWT keys and secrets (Configured in custom Security classes)
+### Local Development (without Docker)
 
-## Security
+1. Install and start PostgreSQL, create database `TechW`
+2. Update `application-dev.properties` with your local DB connection
+3. Run the backend:
 
-- JWT-based authentication for administrative and user-specific APIs.
-- Public APIs (Products, Categories, Brands, Auth) are accessible without authentication.
-- Role-based access control (`@PreAuthorize("hasRole('ADMIN')")`).
-- Passwords stored securely using BCrypt hashing.
+```bash
+cd backend
+.\gradlew.bat bootRun
+```
 
-## Contributing
+4. Run the frontend:
 
-1. Follow the established coding conventions
-2. Use the DTO → Model → Entity pattern
-3. Ensure to avoid lazy-loading serialization bugs (e.g., using `@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})` on `FetchType.LAZY` relations).
-4. Write unit tests for new functionality.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Spring Profiles
+
+| Profile | DB Config | SQL Logging | DDL Mode | Data Seed |
+|---------|-----------|-------------|----------|-----------|
+| `dev` (default) | Local/Docker | ✅ Enabled | `update` | ✅ Enabled |
+| `prod` | Env vars (`DB_URL`, `DB_USER`, `DB_PASS`) | ❌ Disabled | `validate` | ❌ Disabled |
+
+Switch profiles:
+```bash
+# Run with prod profile
+.\gradlew.bat bootRun --args='--spring.profiles.active=prod'
+
+# Or via environment variable
+set SPRING_PROFILES_ACTIVE=prod
+```
+
+## API Endpoints
+
+### Authentication (Public)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Login and get JWT token |
+
+### Products (Public GET, Admin POST/PUT/DELETE)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/products` | List products (filter: `name`, `categoryId`) |
+| GET | `/api/products/{id}` | Get product details |
+| POST | `/api/products` | Create product (Admin) |
+| PUT | `/api/products/{id}` | Update product (Admin) |
+| DELETE | `/api/products/{id}` | Delete product (Admin) |
+
+### Cart (Authenticated)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/cart` | Get current user's cart |
+| POST | `/api/cart/items` | Add item to cart |
+| PUT | `/api/cart/items/{itemId}` | Update item quantity |
+| DELETE | `/api/cart/items/{itemId}` | Remove item |
+| DELETE | `/api/cart` | Clear cart |
+| POST | `/api/cart/checkout` | Checkout → create order |
+
+### Orders (Authenticated)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/orders` | All orders (Admin) |
+| GET | `/api/orders/my-orders` | Current user's orders |
+| GET | `/api/orders/{id}` | Order details |
+| PUT | `/api/orders/{id}/status` | Update status (Admin) |
+| PUT | `/api/orders/{id}/cancel` | Cancel own PENDING order |
+| PUT | `/api/orders/{id}/update` | Edit own PENDING order |
+
+### Users (Admin)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/users` | List all users (Admin) |
+| PUT | `/api/users/{id}/role` | Change user role (Admin) |
+| GET | `/api/users/me` | Get own profile |
+| PUT | `/api/users/me` | Update own profile |
+
+> **Full interactive docs**: See Swagger UI at `/swagger-ui.html`
+
+## Running Tests
+
+```bash
+cd backend
+.\gradlew.bat test
+```
+
+Test classes:
+- `CartServiceTest` — Cart operations & checkout
+- `UserServiceTest` — User listing & role updates
+- `ProductServiceTest` — CRUD, validation, not-found scenarios
+- `AuthServiceTest` — Register, login, duplicate email, bad credentials
+
+## Security Notes
+
+- JWT tokens expire after 24 hours (configurable via `jwt.expiration`)
+- Passwords stored with BCrypt hashing
+- JWT secret should be set via `JWT_SECRET` environment variable in production
+- Public APIs: products (GET), categories (GET), brands (GET), auth, Swagger UI
+- Protected APIs require `Authorization: Bearer <token>` header

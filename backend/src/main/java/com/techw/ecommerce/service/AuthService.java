@@ -1,6 +1,7 @@
 package com.techw.ecommerce.service;
 
 import com.techw.ecommerce.dto.AuthDto.*;
+import com.techw.ecommerce.exception.DuplicateResourceException;
 import com.techw.ecommerce.model.Cart;
 import com.techw.ecommerce.model.User;
 import com.techw.ecommerce.repository.CartRepository;
@@ -35,7 +36,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("An account with this email already exists.");
+            throw new DuplicateResourceException("User", "email", request.getEmail());
         }
 
         User user = User.builder()
@@ -72,7 +73,7 @@ public class AuthService {
         }
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found with this email."));
+                .orElseThrow(() -> new com.techw.ecommerce.exception.ResourceNotFoundException("User", "email", request.getEmail()));
 
         String token = jwtUtils.generateToken(user.getEmail(), user.getId(), user.getRole().name());
 

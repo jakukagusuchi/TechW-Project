@@ -64,14 +64,7 @@ async function clearCart() {
 }
 
 async function checkout() {
-  checkingOut.value = true;
-  try {
-    await api.post('/api/cart/checkout');
-    await router.push('/orders');
-  } catch (err) {
-    error.value = err.response?.data?.message || 'Checkout failed. Please try again.';
-    checkingOut.value = false;
-  }
+  router.push('/checkout');
 }
 
 onMounted(() => fetchCart());

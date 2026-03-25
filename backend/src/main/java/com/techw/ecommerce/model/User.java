@@ -27,6 +27,9 @@ public class User {
     private String firstName;
     private String lastName;
 
+    @Column(columnDefinition = "TEXT")
+    private String avatarUrl;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 

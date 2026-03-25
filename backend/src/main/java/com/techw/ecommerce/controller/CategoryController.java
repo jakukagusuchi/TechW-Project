@@ -1,5 +1,7 @@
 package com.techw.ecommerce.controller;
 
+import com.techw.ecommerce.dto.ApiResponse;
+import com.techw.ecommerce.exception.ResourceNotFoundException;
 import com.techw.ecommerce.model.Category;
 import com.techw.ecommerce.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,24 +19,30 @@ public class CategoryController {
     private CategoryRepository categoryRepository;
 
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories() {
-        return ResponseEntity.ok(categoryRepository.findAll());
+    public ResponseEntity<ApiResponse<List<Category>>> getAllCategories() {
+        return ResponseEntity.ok(ApiResponse.success(categoryRepository.findAll()));
     }
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
-        return ResponseEntity.ok(categoryRepository.save(category));
+    public ResponseEntity<ApiResponse<Category>> createCategory(@RequestBody Category category) {
+        return ResponseEntity.ok(ApiResponse.created(categoryRepository.save(category)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable UUID id, @RequestBody Category category) {
+    public ResponseEntity<ApiResponse<Category>> updateCategory(@PathVariable UUID id, @RequestBody Category category) {
+        if (!categoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Category", "id", id);
+        }
         category.setId(id);
-        return ResponseEntity.ok(categoryRepository.save(category));
+        return ResponseEntity.ok(ApiResponse.success(categoryRepository.save(category)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable UUID id) {
+        if (!categoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Category", "id", id);
+        }
         categoryRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Category deleted successfully", null));
     }
 }
